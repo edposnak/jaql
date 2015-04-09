@@ -9,8 +9,7 @@ module Jaql
         @display_name = display_name if column_name != display_name
       end
 
-      # @param [RunContext] run_context unused
-      def to_sql(run_context)
+      def to_sql
         "#{quote table_name}.#{quote column_name}#{display_name && " AS #{quote(display_name)}"}"
       end
     end

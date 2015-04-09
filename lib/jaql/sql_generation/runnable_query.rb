@@ -2,63 +2,51 @@ module Jaql
   module SqlGeneration
     # A RunnableQuery extends Query with the ability to produce JSON from postgres by applying spec to scope
     class RunnableQuery < Query
-      JSON_RESULT_COL_NAME = 'json_data'.freeze
+      extend RunnableQueryFactoryMethods
+
+      abstract_method :scope_selected_sql, :run
 
       attr_reader :scope
       private :scope
 
-      def initialize(scope, spec)
+      def initialize(scope, spec, resolver)
         @scope = scope
-        super(ResolverFactory.resolver_for(scope), spec)
+
+        super(Context.new, spec, resolver)
       end
 
       # Run the query and produce JSON
+      JSON_RESULT_COL_NAME = 'json_data'.freeze
+
       def json_array
-        run_returning :array
+        run_returning ARRAY_RETURN_TYPE
       end
 
       def json_row
-        run_returning :row
+        run_returning ROW_RETURN_TYPE
       end
-
-      private
 
       def run_returning(return_type)
-        run_context = RunContext.new
-        runner      = ResolverFactory.runner_for(scope)
+        select_sql = scope_selected_sql
 
-        if runner == :sequel
-          scope_selected_sql = scope.select(Sequel.lit(fields_sql(run_context))).sql
+        sql_to_run = json_sql(select_sql, JSON_RESULT_COL_NAME, return_type)
+        run(sql_to_run, JSON_RESULT_COL_NAME)
+      end
 
-          sql_to_run = sql_for(scope_selected_sql, return_type, run_context)
+      # The context of a particular run
+      # Currently just a temporary relation name generator
+      class Context
+        def initialize(prefix=nil)
+          @prefix       = prefix || 'r'
+          @relation_num = 0
+        end
 
-          scope.db[sql_to_run].first[JSON_RESULT_COL_NAME.to_sym]
-
-        elsif runner == :active_record
-
-          scope_selected_sql = scope.select(fields_sql(run_context)).to_sql
-
-          sql_to_run = sql_for(scope_selected_sql, return_type, run_context)
-
-          scope.connection.execute(sql_to_run).first[JSON_RESULT_COL_NAME]
-        else
-          raise "unknown runner type #{runner}"
+        def tmp_relation_name()
+          @relation_num += 1
+          "#{@prefix}#{@relation_num}"
         end
       end
-
-      def sql_for(scope_selected_sql, return_type, run_context)
-        sql = case return_type
-              when :array
-                run_context.json_array_sql(scope_selected_sql, JSON_RESULT_COL_NAME)
-              when :row
-                run_context.json_row_sql(scope_selected_sql, JSON_RESULT_COL_NAME)
-              else
-                fail "unknown return type: '#{return_type}'"
-              end
-        puts "\n\n****************************** Sequel: sql_to_run = \n\n#{sql} \n\n"
-        sql
-      end
-
     end
+
   end
 end

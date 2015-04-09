@@ -10,8 +10,7 @@ module Jaql
         @subquery     = subquery
       end
 
-      # @param [RunContext] run_context defines the state of the runnable query being constructed
-      def to_sql(run_context)
+      def to_sql
         raise "unknown column or association '#{real_name}' (#{real_name.class})"
       end
     end

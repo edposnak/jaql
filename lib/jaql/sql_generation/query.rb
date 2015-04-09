@@ -2,11 +2,12 @@ module Jaql
   module SqlGeneration
     class Query
 
-      attr_reader :resolver, :spec
-      private :resolver, :spec
+      attr_reader :run_context, :spec, :resolver
+      private :run_context, :spec, :resolver
 
-      def initialize(resolver, spec=nil)
-        @resolver = resolver
+      def initialize(run_context, spec, resolver)
+        @run_context = run_context or fail "#{self.class} must be initialized with a run_context"
+        @resolver = resolver or fail "#{self.class} must be initialized with a resolver"
 
         # TODO deep stringify keys when spec is a hash
         hash_spec = spec.is_a?(String) ? JSON.parse(spec) : spec || {}
@@ -14,9 +15,36 @@ module Jaql
         @spec = hash_spec
       end
 
-      def fields_sql(run_context)
+      ARRAY_RETURN_TYPE = :array
+      ROW_RETURN_TYPE = :row
+
+      def json_sql(cte, display_name, return_type)
+        display_name or raise "display_name cannot be blank"
+
+        sql_method = case return_type
+                     when ARRAY_RETURN_TYPE
+                       :json_agg
+                     when ROW_RETURN_TYPE
+                       :row_to_json
+                     else
+                       fail "unknown return type: '#{return_type}'"
+                     end
+
+        rel = run_context.tmp_relation_name
+        "( SELECT #{sql_method}(#{rel}) AS \"#{display_name}\" FROM (#{cte}) #{rel} )"
+      end
+
+      def json_array_sql(cte, display_name)
+        json_sql(cte, display_name, ARRAY_RETURN_TYPE)
+      end
+
+      def json_row_sql(cte, display_name)
+        json_sql(cte, display_name, ROW_RETURN_TYPE)
+      end
+
+      def fields_sql
         return "#{table_name}.*" if fields.empty?
-        fields.map {|field| field.to_sql(run_context)}.join(",\n")
+        fields.map {|field| field.to_sql}.join(",\n")
       end
 
       private
@@ -34,7 +62,7 @@ module Jaql
           ColumnField.new(table_name, column_name, display_name)
         elsif association = resolver.association_for(real_name)
           new_resolver = resolver.build_from_association(association)
-          subquery = Query.new(new_resolver, subquery_spec)
+          subquery = Query.new(run_context, subquery_spec, new_resolver)
           AssociationField.new(association, display_name, subquery)
         else
           puts "unknown #{table_name}.#{real_name}"

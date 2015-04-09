@@ -10,11 +10,10 @@ module Jaql
         @subquery     = subquery
       end
 
-      # @param [RunContext] run_context defines the state of the runnable query being constructed
-      def to_sql(run_context)
+      def to_sql
         comment_sql = "-- #{association.type} #{association.name} (#{association.associated_table})"
-        ass_sql     = "SELECT #{subquery.fields_sql(run_context)} FROM #{tables_sql} WHERE #{join_cond_sql}"
-        field_sql   = run_context.json_array_sql(ass_sql, display_name || association.name)
+        field_sql = subquery.json_array_sql("SELECT #{subquery.fields_sql} FROM #{tables_sql} WHERE #{join_cond_sql}",
+                                            display_name || association.name)
         [comment_sql, field_sql].join("\n")
       end
 

@@ -21,7 +21,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'pg'
 
   spec.add_dependency 'abstract_method'
-  spec.add_dependency 'mart'
+  spec.add_dependency 'dart'
 
   spec.add_development_dependency 'bundler', '~> 1.7'
   spec.add_development_dependency 'rake', '~> 10.0'
