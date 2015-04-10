@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Jaql::VERSION
   spec.authors       = ["Ed Posnak"]
   spec.email         = ["ed.posnak@gmail.com"]
-  spec.summary       = %q{fast json generation from JQL specs}
-  spec.description   = %q{performs fast json generation from JQL specs by using postgres JSON functions}
+  spec.summary       = %q{JSON query language implementation using postgres JSON functions}
+  spec.description   = %q{JSON query language implementation using postgres JSON functions}
   spec.homepage      = ""
   spec.license       = "MIT"
 
