@@ -27,17 +27,19 @@ module Jaql
       def json_sql(cte, display_name, return_type)
         display_name or raise "display_name cannot be blank"
 
-        sql_method = case return_type
+        rel = run_context.tmp_relation_name
+        select_sql = case return_type
                      when ARRAY_RETURN_TYPE
-                       :json_agg
+                       "coalesce(json_agg(#{rel}), '[]'::JSON)"
                      when ROW_RETURN_TYPE
-                       :row_to_json
+                       "row_to_json(#{rel})"
+                       # uncomment this to return {} instead of nil for empty rows
+                       # "coalesce(row_to_json(#{rel}), '{}'::JSON)"
                      else
                        fail "unknown return type: '#{return_type}'"
                      end
 
-        rel = run_context.tmp_relation_name
-        "( SELECT #{sql_method}(#{rel}) AS \"#{display_name}\" FROM (#{cte}) #{rel} )"
+        %Q{( SELECT #{select_sql} AS "#{display_name}" FROM (#{cte}) #{rel} )}
       end
 
       def json_array_sql(cte, display_name)

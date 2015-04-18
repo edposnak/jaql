@@ -12,8 +12,11 @@ module Jaql
 
       def to_sql
         comment_sql = "-- #{association.type} #{association.name} (#{association.associated_table})"
-        field_sql = subquery.json_array_sql("SELECT #{subquery.fields_sql} FROM #{tables_sql} WHERE #{where_sql}",
-                                            display_name || association.name)
+
+        cte = "SELECT #{subquery.fields_sql} FROM #{tables_sql} WHERE #{where_sql}"
+        return_type = association.type == Dart::Association::MANY_TO_ONE_TYPE ? Query::ROW_RETURN_TYPE : Query::ARRAY_RETURN_TYPE
+        field_sql = subquery.json_sql(cte, display_name || association.name, return_type)
+
         [comment_sql, field_sql].join("\n")
       end
 
