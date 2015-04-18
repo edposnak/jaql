@@ -12,7 +12,7 @@ module Jaql
 
       def to_sql
         comment_sql = "-- #{association.type} #{association.name} (#{association.associated_table})"
-        field_sql = subquery.json_array_sql("SELECT #{subquery.fields_sql} FROM #{tables_sql} WHERE #{join_cond_sql}",
+        field_sql = subquery.json_array_sql("SELECT #{subquery.fields_sql} FROM #{tables_sql} WHERE #{where_sql}",
                                             display_name || association.name)
         [comment_sql, field_sql].join("\n")
       end
@@ -23,6 +23,14 @@ module Jaql
         sql = quote association.associated_table
         sql << ", #{quote association.join_table}" if is_join?(association)
         sql
+      end
+
+      def where_sql
+        if default_where = subquery.default_where_sql
+        "(#{join_cond_sql}) AND (#{default_where})"
+        else
+          join_cond_sql
+        end
       end
 
       def join_cond_sql
