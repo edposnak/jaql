@@ -1,6 +1,7 @@
 # Jaql
 
-TODO: Write a gem description
+JAQL provides fast postgres JSON generation and support for the JSON API Query Language.
+
 
 ## Installation
 
