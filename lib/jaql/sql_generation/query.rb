@@ -19,11 +19,6 @@ module Jaql
       ARRAY_RETURN_TYPE = :array
       ROW_RETURN_TYPE = :row
 
-      # Returns a default WHERE clause to be applied to this query (e.g. model default scope)
-      def default_where_sql
-        resolver.default_where_sql
-      end
-
       def json_sql(cte, display_name, return_type)
         display_name or raise "display_name cannot be blank"
 
@@ -52,6 +47,7 @@ module Jaql
 
       def fields_sql
         return "#{resolver.table_name}.*" if fields.empty?
+
         fields.map {|field| field.to_sql}.join(",\n")
       end
 
