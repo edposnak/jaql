@@ -8,9 +8,9 @@ Gem::Specification.new do |spec|
   spec.version       = Jaql::VERSION
   spec.authors       = ["Ed Posnak"]
   spec.email         = ["ed.posnak@gmail.com"]
-  spec.summary       = %q{JSON query language implementation using postgres JSON functions}
+  spec.summary       = %q{JSON query language in ruby}
   spec.description   = %q{JSON query language implementation using postgres JSON functions}
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/edposnak"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
@@ -18,11 +18,11 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_dependency 'pg'
+  spec.add_dependency 'abstract_method', '~> 1.2'
 
-  spec.add_dependency 'abstract_method'
-  spec.add_dependency 'activesupport'
-  spec.add_dependency 'dart'
+  spec.add_dependency 'activesupport', '~> 4.2'
+  spec.add_development_dependency 'pg', '~> 0.18'
+  spec.add_dependency 'dart', '~> 0'
 
   spec.add_development_dependency 'bundler', '~> 1.7'
   spec.add_development_dependency 'rake', '~> 10.0'
