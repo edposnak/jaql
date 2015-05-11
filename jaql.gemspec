@@ -20,7 +20,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency 'abstract_method', '~> 1.2'
 
-  spec.add_dependency 'activesupport', '~> 4.2'
+  spec.add_dependency 'activesupport', '> 3'
   spec.add_development_dependency 'pg', '~> 0.18'
   spec.add_dependency 'dart', '~> 0'
 
