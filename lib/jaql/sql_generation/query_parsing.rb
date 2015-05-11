@@ -4,6 +4,9 @@ module Jaql
 
       class InvalidQuery < StandardError ; end
 
+      # includers must respond_to:
+      # query_table_name
+
       private
 
       # Protocol
@@ -34,19 +37,16 @@ module Jaql
                   if from_name = subquery_spec[FROM_KEY]
                     ass, col = from_name.split('.')
                     if col # get the value from ass.col
-                      result << associated_column(ass, col, display_name, subquery_spec)
+                      result << association_column_or_function(ass, col, display_name, subquery_spec)
                     else # from_name is the name of the column or association
                       result << column_or_association(from_name, display_name, subquery_spec)
                     end
                   else # display_name is the name of the column or association
                     result << column_or_association(display_name, nil, subquery_spec)
                   end
-
-
-
                 end
               end
-            else # TODO raise invalid query
+            else
               raise InvalidQuery.new("json field '#{field}' is a #{field.class}")
             end
           end
@@ -55,38 +55,33 @@ module Jaql
         result
       end
 
-      def associated_column(ass_name, col_name, display_name, subquery_spec)
+      def association_column_or_function(ass_name, col_name, display_name, subquery_spec)
         if association = resolver.association_for(ass_name)
-          if association.to_one?
-            AssociatedColumnField.new(association, col_name, display_name)
-          else
-            ErrorField.new "cannot parse 'from: #{ass_name}.#{col_name}' because #{ass_name} is a #{association.type} association"
-          end
-          # new_resolver = resolver.build_from_association(association)
-          # subquery     = Query.new(run_context, subquery_spec, new_resolver)
-
+          field_class = AssociationFunctionField.supports?(col_name) ? AssociationFunctionField : AssociatedColumnField
+          field_class.new(association, col_name, display_name, build_subquery(association, subquery_spec))
         else
-          unknown_field(table_name, real_name, display_name)
+          ErrorField.new "unknown association '#{query_table_name}.#{ass_name}' (#{display_name}: #{ass_name}.#{col_name})"
         end
 
       end
 
       def column_or_association(real_name, display_name=nil, subquery_spec=nil)
-        table_name = resolver.table_name
         if column_name = resolver.column_for(real_name)
-          ColumnField.new(table_name, column_name, display_name)
+          ColumnField.new(query_table_name, column_name, display_name)
         elsif association = resolver.association_for(real_name)
-          new_resolver = resolver.build_from_association(association)
-          subquery     = Query.new(run_context, subquery_spec, new_resolver)
-          AssociationField.new(association, display_name, subquery)
+          AssociationField.new(association, display_name, build_subquery(association, subquery_spec))
         else
-          unknown_field(table_name, real_name, display_name)
+          ErrorField.new "unknown column or association '#{query_table_name}.#{real_name}' (#{display_name})"
         end
       end
 
-      def unknown_field(table_name, real_name, display_name)
-        ErrorField.new "unknown column or association '#{table_name}.#{real_name}'"
+      def build_subquery(association, subquery_spec)
+        new_resolver = resolver.build_from_association(association)
+        # TODO alias any join tables in the association that are the same as resolver.table_name
+        table_alias = "#{association.associated_table}_#{run_context.tmp_relation_name}" if association.associated_table == resolver.table_name
+        Query.new(run_context, subquery_spec, new_resolver, table_alias)
       end
+
     end
   end
 end

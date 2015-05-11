@@ -1,14 +1,16 @@
 module Jaql
   module SqlGeneration
     class Query
-
       include QueryParsing
+
+      attr_reader :table_name_alias # public
       attr_reader :run_context, :spec, :resolver
       private :run_context, :spec, :resolver
 
-      def initialize(run_context, spec, resolver)
+      def initialize(run_context, spec, resolver, table_name_alias=nil)
         @run_context = run_context or fail "#{self.class} must be initialized with a run_context"
         @resolver = resolver or fail "#{self.class} must be initialized with a resolver"
+        @table_name_alias = table_name_alias
 
         # TODO deep stringify keys when spec is a hash
         hash_spec = spec.is_a?(String) ? JSON.parse(spec) : spec || {}
@@ -46,12 +48,17 @@ module Jaql
       end
 
       def fields_sql
-        return "#{resolver.table_name}.*" if fields.empty?
+        return "#{query_table_name}.*" if fields.empty?
 
         fields.map {|field| field.to_sql}.join(",\n")
       end
 
       private
+
+      def query_table_name
+        # defaults to the real table name, overridden by set_table_name
+        @query_table_name ||= @table_name_alias || resolver.table_name
+      end
 
       def validate!(spec)
         spec.keys.all? {|k| k.is_a?(String)} or raise "spec containing non-string keys passed to #{self.class}.new. Currently spec must be a JSON hash"
