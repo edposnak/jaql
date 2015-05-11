@@ -27,7 +27,7 @@ module Jaql
 
       def field_sql
         select_sql = "SELECT #{subquery.fields_sql}"
-        cte = "#{select_sql}\n  #{from_sql(association)}\n  #{scope_sql(association)}"
+        cte = "#{select_sql}\n  #{from_sql(association)}\n  #{scope_sql(association, subquery.scope_options)}"
         return_type = association.to_one? ? Query::ROW_RETURN_TYPE : Query::ARRAY_RETURN_TYPE
         field_sql = subquery.json_sql(cte, display_name || association.name, return_type)
       end

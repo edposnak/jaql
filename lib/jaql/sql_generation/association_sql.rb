@@ -22,10 +22,11 @@ module Jaql
 
       def scope_sql(association, options={})
         ass_scope = association.scope
+        client_scope = options.symbolize_keys
         sql = "WHERE (#{join_cond_sql(association)})"
 
         # Client WHERE combines with association WHERE
-        if client_where = options[:where]
+        if client_where = client_scope[:where]
           sql << " AND (#{client_where})"
         end
         if ass_where = ass_scope[:where]
@@ -33,11 +34,11 @@ module Jaql
         end
 
         # Client provided ORDER and LIMIT override that of the association
-        if the_order = options[:order] || ass_scope[:order]
+        if the_order = client_scope[:order] || ass_scope[:order]
           sql << " ORDER BY (#{the_order})"
         end
 
-        if ass_limit = options[:limit] || ass_scope[:limit]
+        if ass_limit = client_scope[:limit] || ass_scope[:limit]
           sql << " LIMIT (#{ass_limit})"
         end
 

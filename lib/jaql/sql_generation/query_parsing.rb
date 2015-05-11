@@ -9,9 +9,14 @@ module Jaql
 
       private
 
-      # Protocol
+      # JAQL Protocol
+      # TODO make all of these KEYS case-insensitive
       JSON_KEY = 'json'.freeze
       FROM_KEY = 'from'.freeze
+      WHERE_KEY = 'where'.freeze
+      ORDER_KEY = 'order'.freeze
+      LIMIT_KEY = 'limit'.freeze
+      ASSOCIATION_SCOPE_OPTION_KEYS = [WHERE_KEY, ORDER_KEY, LIMIT_KEY]
 
       # parses a spec into a list of Fields, each of which may contain their own lists of fields
       def parse_fields

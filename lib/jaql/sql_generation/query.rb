@@ -53,6 +53,10 @@ module Jaql
         fields.map {|field| field.to_sql}.join(",\n")
       end
 
+      def scope_options
+        spec.slice(*ASSOCIATION_SCOPE_OPTION_KEYS)
+      end
+
       private
 
       def query_table_name

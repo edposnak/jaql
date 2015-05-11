@@ -5,6 +5,7 @@ module Jaql
       private
 
       def scope_selected_sql
+        # TODO implement client-supplied scopes (where, order, limit) at outer layer
         scope.select(fields_sql).to_sql
       end
 
