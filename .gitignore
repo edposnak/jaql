@@ -14,5 +14,6 @@
 *.so
 *.o
 *.a
+*.gem
 mkmf.log
 /TODO.txt

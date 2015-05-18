@@ -12,7 +12,7 @@ module Jaql
         @resolver = resolver or fail "#{self.class} must be initialized with a resolver"
         @table_name_alias = table_name_alias
 
-        # TODO deep stringify keys when spec is a hash
+        # TODO deep stringify keys when spec is a hash (JSON generate/decode might be equally fast)
         hash_spec = spec.is_a?(String) ? JSON.parse(spec) : spec || {}
         validate!(hash_spec)
         @spec = hash_spec

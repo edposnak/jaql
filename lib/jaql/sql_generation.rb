@@ -1,7 +1,6 @@
 require_relative 'sql_generation/field'
-require_relative 'sql_generation/association_sql.rb'
-require_relative 'sql_generation/associated_column_field'
 require_relative 'sql_generation/association_field'
+require_relative 'sql_generation/associated_column_field'
 require_relative 'sql_generation/association_function_field'
 require_relative 'sql_generation/column_field'
 require_relative 'sql_generation/error_field'

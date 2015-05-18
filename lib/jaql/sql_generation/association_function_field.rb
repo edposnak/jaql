@@ -1,12 +1,10 @@
 module Jaql
   module SqlGeneration
     # Allows for creation of fields from some column on some association, e.g. creator.last_name
-    class AssociationFunctionField < Field
+    class AssociationFunctionField < AssociationField
 
-      include AssociationSQL
-
-      COUNT_FUNCTION = 'count'
-      EXISTS_FUNCTION = 'exists'
+      COUNT_FUNCTION = 'count'.freeze
+      EXISTS_FUNCTION = 'exists'.freeze
 
       SUPPORTED_FUNCTIONS = [COUNT_FUNCTION, EXISTS_FUNCTION]
       def self.supports?(function_name)
@@ -14,19 +12,12 @@ module Jaql
       end
 
 
-      attr_reader :association, :function_name, :display_name
-      private :association, :function_name, :display_name
+      attr_reader :function_name
+      private :function_name
 
       def initialize(association, function_name, display_name=nil, subquery=nil)
-        @association = association
+        super(association, display_name, subquery)
         @function_name = function_name.to_s.downcase
-        @display_name = display_name
-        @subquery = subquery
-        @associated_table_alias = subquery.table_name_alias
-      end
-
-      def to_sql
-        [comment_sql, field_sql].join("\n")
       end
 
       private

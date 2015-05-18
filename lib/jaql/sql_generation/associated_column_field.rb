@@ -1,22 +1,14 @@
 module Jaql
   module SqlGeneration
     # Allows for creation of fields from some column on some association, e.g. creator.last_name
-    class AssociatedColumnField < Field
-      include AssociationSQL
+    class AssociatedColumnField < AssociationField
 
-      attr_reader :association, :column_name, :display_name
-      private :association, :column_name, :display_name
+      attr_reader :column_name
+      private :column_name
 
       def initialize(association, column_name, display_name=nil, subquery=nil)
-        @association = association
+        super(association, display_name, subquery)
         @column_name = column_name
-        @display_name = display_name
-        @subquery = subquery
-        @associated_table_alias = subquery.table_name_alias
-      end
-
-      def to_sql
-        [comment_sql, field_sql].join("\n")
       end
 
       private
@@ -27,7 +19,7 @@ module Jaql
 
       def field_sql
         select_sql = "SELECT #{table_name_sql(association)}.#{quote column_name} AS #{quote(display_name)}"
-        cte = "#{select_sql}\n  #{from_sql(association)}\n  #{scope_sql(association)}"
+        cte = "#{select_sql}\n  #{from_sql(association)}\n  #{scope_sql(association, subquery.scope_options)}"
 
         # return the column value if the association is *_to_one, otherwise return an array
         association.to_one? ? "(#{cte})" : "(SELECT array(#{cte}) AS #{display_name})"
