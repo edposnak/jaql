@@ -7,10 +7,10 @@ module Jaql
 
 
       # e.g. child_undo_broadcast_ass, :child_undo_broadcast_id, json: [:id, :start_time]
-      def initialize(association, display_name=nil, subquery=nil)
-        @association  = association
-        @display_name = display_name
-        @subquery     = subquery
+      def initialize(display_name, association, subquery)
+        super(display_name)
+        @association = association
+        @subquery = subquery
       end
 
       def to_sql
@@ -27,7 +27,7 @@ module Jaql
         select_sql = "SELECT #{subquery.fields_sql}"
         cte = "#{select_sql}\n  #{from_sql(association)}\n  #{scope_sql(association, subquery.scope_options)}"
         return_type = association.to_one? ? Query::ROW_RETURN_TYPE : Query::ARRAY_RETURN_TYPE
-        field_sql = subquery.json_sql(cte, display_name || association.name, return_type)
+        subquery.json_sql(cte, display_name || association.name, return_type)
       end
 
       #########################################################################################################
@@ -60,7 +60,6 @@ module Jaql
         ass_scope = association.scope.stringify_keys
         client_scope = options.stringify_keys
 
-        ASSOCIATION_SCOPE_OPTION_KEYS
         sql = "WHERE (#{join_cond_sql(association)})"
 
         # Client WHERE combines with association WHERE

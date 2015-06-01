@@ -1,20 +1,20 @@
 module Jaql
   module SqlGeneration
     # Allows for creation of fields from some column on some association, e.g. creator.last_name
-    class AssociatedColumnField < AssociationField
+    class AssociationColumnField < AssociationField
 
       attr_reader :column_name
       private :column_name
 
-      def initialize(association, column_name, display_name=nil, subquery=nil)
-        super(association, display_name, subquery)
+      def initialize(display_name, association, subquery, column_name)
+        super(display_name, association, subquery)
         @column_name = column_name
       end
 
       private
 
       def comment_sql
-        "-- #{association.associated_table}.#{column_name} (from #{association.type} #{association.name})"
+        "-- #{association.name}.#{column_name} (from #{association.type} #{association.name})"
       end
 
       def field_sql

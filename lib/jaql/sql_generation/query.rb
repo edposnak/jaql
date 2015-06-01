@@ -7,15 +7,16 @@ module Jaql
       attr_reader :run_context, :spec, :resolver
       private :run_context, :spec, :resolver
 
-      def initialize(run_context, spec, resolver, table_name_alias=nil)
+
+      # @param [Context] run_context
+      # @param [Spec] jaql_spec
+      # @param [Dart::Reflection::AbstractResolver] resolver
+      # @param [String|NilClass] table_name_alias
+      def initialize(run_context, jaql_spec, resolver, table_name_alias=nil)
         @run_context = run_context or fail "#{self.class} must be initialized with a run_context"
         @resolver = resolver or fail "#{self.class} must be initialized with a resolver"
         @table_name_alias = table_name_alias
-
-        # TODO deep stringify keys when spec is a hash (JSON generate/decode might be equally fast)
-        hash_spec = spec.is_a?(String) ? JSON.parse(spec) : spec || {}
-        validate!(hash_spec)
-        @spec = hash_spec
+        @spec = jaql_spec
       end
 
       ARRAY_RETURN_TYPE = :array
@@ -54,7 +55,7 @@ module Jaql
       end
 
       def scope_options
-        spec.slice(*ASSOCIATION_SCOPE_OPTION_KEYS)
+        spec.scope_options
       end
 
       private
@@ -64,12 +65,8 @@ module Jaql
         @query_table_name ||= @table_name_alias || resolver.table_name
       end
 
-      def validate!(spec)
-        spec.keys.all? {|k| k.is_a?(String)} or raise "spec containing non-string keys passed to #{self.class}.new. Currently spec must be a JSON hash"
-      end
-
       def fields
-        @fields ||= parse_fields
+        @fields ||= parse_fields(spec)
       end
 
     end

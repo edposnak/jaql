@@ -4,6 +4,7 @@ require 'dart' # just brings in core, other resolvers brought in dynamically as 
 
 require 'jaql/version'
 require 'jaql/protocol'
+require 'jaql/spec'
 
 require 'jaql/sql_generation'
 

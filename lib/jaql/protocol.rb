@@ -2,7 +2,9 @@ module Jaql
   module Protocol
 
     JSON_KEY = 'json'.freeze
+    STR_KEY = 'str'.freeze
     FROM_KEY = 'from'.freeze
+
     WHERE_KEY = 'where'.freeze
     ORDER_KEY = 'order'.freeze
     LIMIT_KEY = 'limit'.freeze

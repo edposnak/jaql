@@ -16,12 +16,14 @@ module Jaql
       @scope = scope
     end
 
-    def index(query_spec={})
-      JSONString.new SqlGeneration::RunnableQuery.for(scope, query_spec).json_array
+    # @param [String|Hash|NilClass] raw_spec
+    def index(raw_spec=nil)
+      JSONString.new SqlGeneration::RunnableQuery.for(scope, raw_spec).json_array
     end
 
-    def show(query_spec={})
-      JSONString.new SqlGeneration::RunnableQuery.for(scope, query_spec).json_row
+    # @param [String|Hash|NilClass] raw_spec
+    def show(raw_spec=nil)
+      JSONString.new SqlGeneration::RunnableQuery.for(scope, raw_spec).json_row
     end
 
   end

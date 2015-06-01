@@ -1,6 +1,6 @@
 module Jaql
   module SqlGeneration
-    # A RunnableQuery extends Query with the ability to produce JSON from postgres by applying spec to scope
+    # A RunnableQuery extends Query with the ability to produce JSON from postgres by applying raw_spec to scope
     class RunnableQuery < Query
       extend RunnableQueryFactoryMethods
 
@@ -9,10 +9,9 @@ module Jaql
       attr_reader :scope
       private :scope
 
-      def initialize(scope, spec, resolver)
+      def initialize(scope, raw_spec, resolver)
         @scope = scope
-
-        super(Context.new, spec, resolver)
+        super(Context.new, raw_spec, resolver)
       end
 
       # Run the query and produce JSON
