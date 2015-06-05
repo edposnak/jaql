@@ -80,12 +80,13 @@ module Jaql
       end
 
       def column_or_association_field(display_name, real_name, jaql_spec=nil)
+        jaql_spec ||= Jaql::Spec.new # if no spec given, create a blank one
         if column_name = resolver.column_for(real_name)
           ColumnField.new(query_table_name, column_name, display_name)
         elsif association = resolver.association_for(real_name)
           AssociationField.new(display_name, association, build_subquery(association, jaql_spec))
         else
-          ErrorField.new "unknown column or association '#{query_table_name}.#{real_name}' (#{display_name})"
+          ErrorField.new "unknown column or association '#{query_table_name}.#{real_name}' (display_name=#{display_name}, resolver model=#{resolver.send(:this_model_class)})"
         end
       end
 

@@ -19,6 +19,7 @@ Gem::Specification.new do |spec|
   spec.require_paths = ["lib"]
 
   spec.add_dependency 'abstract_method', '~> 1.2'
+  spec.add_dependency 'adamantium', '~> 0'
 
   spec.add_dependency 'activesupport', '> 3'
   spec.add_development_dependency 'pg', '~> 0.18'

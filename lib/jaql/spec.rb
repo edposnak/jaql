@@ -1,6 +1,6 @@
 module Jaql
   class Spec
-
+    include Adamantium
     include Jaql::Protocol
 
     attr_reader :spec
@@ -44,16 +44,19 @@ module Jaql
     end
 
     def from
-      @from ||= spec[FROM_KEY]
+      spec[FROM_KEY]
     end
+    memoize :from
 
     def str
-      @str ||= spec[STR_KEY]
+      spec[STR_KEY]
     end
+    memoize :str
 
     def json
-      @json ||= spec[JSON_KEY]
+      spec[JSON_KEY]
     end
+    memoize :json
 
     def association_and_column_or_function
       from.split('.')

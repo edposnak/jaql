@@ -16,7 +16,7 @@ module Jaql
         @run_context = run_context or fail "#{self.class} must be initialized with a run_context"
         @resolver = resolver or fail "#{self.class} must be initialized with a resolver"
         @table_name_alias = table_name_alias
-        @spec = jaql_spec
+        @spec = jaql_spec or fail "#{self.class} must be initialized with a jaql spec"
       end
 
       ARRAY_RETURN_TYPE = :array

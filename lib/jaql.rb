@@ -1,4 +1,5 @@
 require 'abstract_method'
+require 'adamantium'
 
 require 'dart' # just brings in core, other resolvers brought in dynamically as needed
 

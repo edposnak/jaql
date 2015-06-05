@@ -33,11 +33,11 @@ module Jaql
 
       private
 
-      def active_record_model_query(scope, query_spec, model)
+      def active_record_model_query(scope, query_spec, model_class)
         unless defined?(Dart::Reflection::ActiveRecordModel::Resolver)
           require 'dart/active_record_model_reflection'
         end
-        resolver = Dart::Reflection::ActiveRecordModel::Resolver.new(model)
+        resolver = Dart::Reflection::ActiveRecordModel::Resolver.new(model_class)
         ActiveRecordQuery.new(scope, query_spec, resolver)
       end
 
@@ -49,11 +49,11 @@ module Jaql
         SequelQuery.new(scope, query_spec, resolver)
       end
 
-      def sequel_model_query(scope, query_spec, model)
+      def sequel_model_query(scope, query_spec, model_class)
         unless defined?(Dart::Reflection::SequelModel::Resolver)
           require 'dart/sequel_model_reflection'
         end
-        resolver = Dart::Reflection::SequelModel::Resolver.new(model)
+        resolver = Dart::Reflection::SequelModel::Resolver.new(model_class)
         SequelQuery.new(scope, query_spec, resolver)
       end
 
