@@ -7,8 +7,8 @@ module Jaql
         clauses = []
         els = str.split /(\#{.*?})/
         els.each_slice(2) do |literal, interpolated|
-          clauses << "'#{literal}'" unless literal.empty?
-          clauses << "#{quote table_name}.#{quote str_interp(interpolated)}" unless interpolated.empty?
+          clauses << "'#{literal}'" unless literal.blank?
+          clauses << "#{quote table_name}.#{quote str_interp(interpolated)}" unless interpolated.blank?
         end
 
         "#{clauses.join(' || ')} AS #{quote(display_name)}"
