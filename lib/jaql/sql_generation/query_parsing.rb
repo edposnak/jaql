@@ -95,7 +95,7 @@ module Jaql
         elsif association = resolver.association_for(real_name)
           AssociationField.new(display_name, build_subquery(association, jaql_spec))
         else
-          ErrorField.new "unknown column or association '#{query_table_name}.#{real_name}' (display_name=#{display_name}, resolver model=#{resolver.send(:this_model_class)})"
+          ErrorField.new "unknown column or association '#{query_table_name}.#{real_name}' (display_name=#{display_name}, resolver=#{resolver})"
         end
       end
 
