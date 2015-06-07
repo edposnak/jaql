@@ -11,33 +11,36 @@ module Jaql
         SUPPORTED_FUNCTIONS.include?(function_name.downcase)
       end
 
-
       attr_reader :function_name
       private :function_name
 
-      def initialize(display_name, association, subquery, function_name)
-        super(display_name, association, subquery)
+      def initialize(display_name, subquery, function_name)
+        super(display_name, subquery)
         @function_name = function_name.to_s.downcase
       end
 
       private
 
       def comment_sql
-        "-- #{association.name}.#{function_name} (from #{association.type} #{association.name})"
+        "-- #{last_association.name}.#{function_name} #{from_comment}"
       end
 
       def field_sql
-        # filter out ORDER, LIMIT and OFFSET since they don't jibe with COUNT and EXISTS
-        subquery_scope_options = subquery.scope_options.slice *(ASSOCIATION_SCOPE_OPTION_KEYS - [ORDER_KEY, LIMIT_KEY, OFFSET_KEY])
-        # TODO consider selectively supporting ORDER, LIMIT and OFFSET if they make sense with other functions
-
+        # Consider separate subclasses for AssociationCountField, AssociationExistsField, etc.
         case function_name
         when COUNT_FUNCTION
-          "(SELECT COUNT(*) AS #{quote(display_name)}\n  #{from_sql(association)}\n  #{scope_sql(association, subquery_scope_options)})"
+          "(SELECT COUNT(count_column) FROM (SELECT 1 AS count_column #{selection_sql}) #{quote('count_subquery')}) #{as_display_name_sql}"
         when EXISTS_FUNCTION
-          "(SELECT EXISTS (SELECT * #{from_sql(association)}\n  #{scope_sql(association, subquery_scope_options.merge(limit: 1))} ) AS #{quote(display_name)})"
+          "(SELECT EXISTS (SELECT * #{selection_sql(limit: 1)}) #{as_display_name_sql})"
         end
       end
+
+      def allowed_client_scope_options
+        # filter out ORDER, LIMIT and OFFSET since they don't jibe with COUNT and EXISTS
+        # TODO consider selectively supporting ORDER, LIMIT and OFFSET if they make sense with other functions
+        super - [ORDER_KEY, LIMIT_KEY, OFFSET_KEY]
+      end
+
     end
   end
 end

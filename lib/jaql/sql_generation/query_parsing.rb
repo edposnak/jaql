@@ -24,7 +24,7 @@ module Jaql
           json.each do |field|
             case field
             when String, Symbol # field is the real name
-              result << column_or_association_field(nil, field)
+              result << column_or_association_field(field, field)
 
             when Hash
               field.each do |display_name, right_hand_side|
@@ -49,9 +49,18 @@ module Jaql
       def field_from_spec(display_name, jaql_spec)
         if jaql_spec.association_column_or_function?
           ass_name, col_or_fun_name = jaql_spec.association_and_column_or_function
-          if association = resolver.association_for(ass_name)
-            *args = display_name, association, build_subquery(association, jaql_spec), col_or_fun_name
-            AssociationFunctionField.supports?(col_or_fun_name) ? AssociationFunctionField.new(*args) : AssociationColumnField.new(*args)
+          if association1 = resolver.association_for(ass_name)
+            subquery = build_subquery(association1, jaql_spec)
+            if association2 = subquery.association_for(col_or_fun_name)
+              subquery2 = build_subquery(association2, jaql_spec) # the jaql spec applies to the 2nd association
+              AssociationAssociationField.new(display_name, subquery, subquery2)
+            elsif col = subquery.column_for(col_or_fun_name)
+              AssociationColumnField.new(display_name, subquery, col_or_fun_name)
+            elsif AssociationFunctionField.supports?(col_or_fun_name)
+              AssociationFunctionField.new(display_name, subquery, col_or_fun_name)
+            else
+              ErrorField.new "unknown association '#{subqery.query_table_name}.#{col_or_fun_name}' (#{display_name}: #{ass_name}.#{col_or_fun_name})"
+            end
           else
             ErrorField.new "unknown association '#{query_table_name}.#{ass_name}' (#{display_name}: #{ass_name}.#{col_or_fun_name})"
           end
@@ -59,7 +68,7 @@ module Jaql
         elsif jaql_spec.association_str?
           ass_name = jaql_spec.from
           if association = resolver.association_for(ass_name)
-            AssociationInterpolatedStringField.new(display_name, association, build_subquery(association, jaql_spec), jaql_spec.str)
+            AssociationInterpolatedStringField.new(display_name, build_subquery(association, jaql_spec), jaql_spec.str)
           else
             ErrorField.new "unknown association '#{query_table_name}.#{ass_name}' (#{display_name}: from: #{ass_name} str: #{jaql_spec.str})"
           end
@@ -72,7 +81,7 @@ module Jaql
           InterpolatedStringField.new(display_name, query_table_name, jaql_spec.str)
 
         elsif jaql_spec.non_aliased_column_or_association?
-          column_or_association_field(nil, display_name, jaql_spec) # display_name is the real name of the column or association
+          column_or_association_field(display_name, display_name, jaql_spec) # display_name is the real name of the column or association
 
         else
           raise "Unparseable query spec: #{display_name}: #{hash_spec}"
@@ -82,9 +91,9 @@ module Jaql
       def column_or_association_field(display_name, real_name, jaql_spec=nil)
         jaql_spec ||= Jaql::Spec.new # if no spec given, create a blank one
         if column_name = resolver.column_for(real_name)
-          ColumnField.new(query_table_name, column_name, display_name)
+          ColumnField.new(display_name, query_table_name, column_name)
         elsif association = resolver.association_for(real_name)
-          AssociationField.new(display_name, association, build_subquery(association, jaql_spec))
+          AssociationField.new(display_name, build_subquery(association, jaql_spec))
         else
           ErrorField.new "unknown column or association '#{query_table_name}.#{real_name}' (display_name=#{display_name}, resolver model=#{resolver.send(:this_model_class)})"
         end
@@ -93,10 +102,7 @@ module Jaql
       # @param [Dart::Association] association
       # @param [Jaql::Spec] jaql_spec
       def build_subquery(association, jaql_spec)
-        new_resolver = resolver.build_from_association(association)
-        # TODO alias any join tables in the association that are the same as resolver.table_name
-        table_alias = "#{association.associated_table}_#{run_context.tmp_relation_name}" if association.associated_table == resolver.table_name
-        Query.new(run_context, jaql_spec, new_resolver, table_alias)
+        Subquery.new(run_context, jaql_spec, association)
       end
 
     end

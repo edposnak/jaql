@@ -3,26 +3,26 @@ module Jaql
     class AssociationInterpolatedStringField < AssociationField
       include StringInterpolation
 
-      attr_reader :display_name, :table_name, :interpolated_string
-      private :display_name, :table_name, :interpolated_string
+      attr_reader :interpolated_string
+      private :interpolated_string
 
-      def initialize(display_name, association, subquery, interpolated_string)
-        super(display_name, association, subquery)
+      def initialize(display_name, subquery, interpolated_string)
+        super(display_name, subquery)
         @interpolated_string = interpolated_string
       end
 
       private
 
       def comment_sql
-        "-- #{interpolated_string} (from #{association.type} #{association.name})"
+        "-- #{interpolated_string} #{from_comment}"
       end
 
-      def field_sql
-        select_sql = "SELECT #{str_sql_for(interpolated_string, table_name_sql(association))}"
-        cte = "#{select_sql}\n  #{from_sql(association)}\n  #{scope_sql(association, subquery.scope_options)}"
+      def selection_is_scalar?
+        true # no need to JSON encode the return value
+      end
 
-        # return the column value if the association is *_to_one, otherwise return an array
-        association.to_one? ? "(#{cte})" : "(SELECT array(#{cte}) AS #{display_name})"
+      def projection_sql
+        "SELECT #{str_sql_for(interpolated_string, table_name_sql(last_association))}"
       end
 
     end

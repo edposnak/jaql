@@ -3,7 +3,6 @@ module Jaql
     class Query
       include QueryParsing
 
-      attr_reader :table_name_alias # public
       attr_reader :run_context, :spec, :resolver
       private :run_context, :spec, :resolver
 
@@ -11,12 +10,10 @@ module Jaql
       # @param [Context] run_context
       # @param [Spec] jaql_spec
       # @param [Dart::Reflection::AbstractResolver] resolver
-      # @param [String|NilClass] table_name_alias
-      def initialize(run_context, jaql_spec, resolver, table_name_alias=nil)
+      def initialize(run_context, jaql_spec, resolver)
         @run_context = run_context or fail "#{self.class} must be initialized with a run_context"
-        @resolver = resolver or fail "#{self.class} must be initialized with a resolver"
-        @table_name_alias = table_name_alias
         @spec = jaql_spec or fail "#{self.class} must be initialized with a jaql spec"
+        @resolver = resolver or fail "#{self.class} must be initialized with a resolver"
       end
 
       ARRAY_RETURN_TYPE = :array
@@ -58,11 +55,19 @@ module Jaql
         spec.scope_options
       end
 
+      # TODO consider declaring delegation
+      def association_for(col_or_fun_name)
+        resolver.association_for(col_or_fun_name)
+      end
+
+      def column_for(col_or_fun_name)
+        resolver.column_for(col_or_fun_name)
+      end
+
       private
 
       def query_table_name
-        # defaults to the real table name, overridden by set_table_name
-        @query_table_name ||= @table_name_alias || resolver.table_name
+        resolver.table_name
       end
 
       def fields

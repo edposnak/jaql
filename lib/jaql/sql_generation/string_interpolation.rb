@@ -11,7 +11,7 @@ module Jaql
           clauses << "#{quote table_name}.#{quote str_interp(interpolated)}" unless interpolated.blank?
         end
 
-        "#{clauses.join(' || ')} AS #{quote(display_name)}"
+        "#{clauses.join(' || ')} #{as_display_name_sql}"
       end
 
       # remove the outer #{} from a matched interpolation

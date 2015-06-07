@@ -13,6 +13,10 @@ module Jaql
 
       private
 
+      def as_display_name_sql
+        "AS #{quote(display_name)}"
+      end
+
       def quote(id)
         already_quoted?(id) ? id : "\"#{id}\""
       end

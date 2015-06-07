@@ -26,11 +26,7 @@ module Jaql
       end
 
       def run_returning(return_type)
-        select_sql = scope_selected_sql
-
-        sql_to_run = json_sql(select_sql, JSON_RESULT_COL_NAME, return_type)
-        puts "\n\n****************************** sql_to_run:\n#{sql_to_run} \n"
-        run(sql_to_run, JSON_RESULT_COL_NAME)
+        run(json_sql(scope_selected_sql, JSON_RESULT_COL_NAME, return_type), JSON_RESULT_COL_NAME)
       end
 
       # The context of a particular run

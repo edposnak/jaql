@@ -6,23 +6,23 @@ module Jaql
       attr_reader :column_name
       private :column_name
 
-      def initialize(display_name, association, subquery, column_name)
-        super(display_name, association, subquery)
+      def initialize(display_name, subquery, column_name)
+        super(display_name, subquery)
         @column_name = column_name
       end
 
       private
 
       def comment_sql
-        "-- #{association.name}.#{column_name} (from #{association.type} #{association.name})"
+        "-- #{last_association.name}.#{column_name} #{from_comment}"
       end
 
-      def field_sql
-        select_sql = "SELECT #{table_name_sql(association)}.#{quote column_name} AS #{quote(display_name)}"
-        cte = "#{select_sql}\n  #{from_sql(association)}\n  #{scope_sql(association, subquery.scope_options)}"
+      def projection_sql
+        "SELECT #{table_name_sql(last_association)}.#{quote column_name} #{as_display_name_sql}"
+      end
 
-        # return the column value if the association is *_to_one, otherwise return an array
-        association.to_one? ? "(#{cte})" : "(SELECT array(#{cte}) AS #{display_name})"
+      def selection_is_scalar?
+        true # no need to JSON encode the return value
       end
 
     end
